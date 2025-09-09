@@ -4,7 +4,8 @@ import pandas as pd
 import json
 import numpy as np
 from io import BytesIO
-
+import pandas as pd
+from data_cleaing import clean_dataframe, ai_clean_dataframe
 st.set_page_config(page_title="Auto Power BI Schema Generator", layout="wide")
 st.title("Auto Power BI → Schema & Rows for Power BI Push Dataset")
 
@@ -58,8 +59,6 @@ for c in selected:
     dtype = map_dtype_to_powerbi(df[c])
     schema.append({"name": c, "dataType": dtype})
 st.json(schema)
-
-# --- Build dataset JSON for Power BI create dataset API ---
 dataset_name = st.text_input("Dataset name (Power BI)", value=f"MyDataset_{uploaded.name.split('.')[0]}")
 table_name = st.text_input("Table name", value="Table1")
 
@@ -77,11 +76,9 @@ dataset_json = {
 st.markdown("### Power BI create-dataset JSON (push dataset)")
 st.code(json.dumps(dataset_json, indent=2), language="json")
 
-# --- Prepare rows payload ---
 def df_to_rows_payload(df_, cols):
-    # convert numpy types to native python types, replace NaN with None
     df2 = df_[cols].replace({np.nan: None}).copy()
-    # Convert datetimes to ISO strings
+
     for col in df2.columns:
         if pd.api.types.is_datetime64_any_dtype(df2[col]):
             df2[col] = df2[col].dt.strftime("%Y-%m-%dT%H:%M:%S")
